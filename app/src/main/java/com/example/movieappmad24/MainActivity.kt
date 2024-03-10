@@ -15,23 +15,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.movieappmad24.ui.theme.MovieAppMAD24Theme
 import androidx.compose.material3.Card
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import coil.compose.rememberImagePainter
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +39,32 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
+val sampleMovies = listOf(
+    Movie(
+        title = "Avatar",
+        director = "James Cameron",
+        year = 2009,
+        plot = "A paraplegic marine dispatched to the moon Pandora on a unique mission becomes torn between following his orders and protecting the world he feels is his home.",
+        imageUrl = "https://www.sky.at/static/img/filmhighlights/sky_1601_avatar.jpg"
+    ),
+    Movie(
+        title = "300",
+        director = "Zack Snyder",
+        year = 2006,
+        plot = "King Leonidas of Sparta and a force of 300 men fight the Persians at Thermopylae in 480 B.C.",
+        imageUrl = "https://pappaspost.com/wp-content/uploads/2020/11/300.jpg" // Replace with a valid URL
+    ),
+    Movie(
+        title = "The Avengers",
+        director = "Joss Whedon",
+        year = 2012,
+        plot = "Die mächtigsten Helden der Erde müssen zusammenkommen und lernen, gemeinsam als Team zu kämpfen, wenn sie den bösen Loki und seine Alien-Armee darin hindern wollen, die Menschheit zu versklaven.",
+        imageUrl = "https://www.film-rezensionen.de/wp-content/uploads/2015/04/Marvels-The-Avengers-Frontpage.jpg"
+    ),
+)
+
 
 @Composable
 fun MainScreen() {
@@ -84,66 +106,67 @@ fun BottomBar() {
 
 @Composable
 fun BodyContent(paddingValues: PaddingValues) {
-    Column(modifier = Modifier
+    LazyColumn(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {
-        // Your body content here, for example, a MovieImageCard()
-        MovieImageCard()
+
+        items(sampleMovies.size) { index ->
+            MovieImageCard(sampleMovies[index])
+        }
     }
 }
+
 @Composable
-fun MovieImageCard() {
+fun MovieImageCard(movie: Movie) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .padding(16.dp)
-            .animateContentSize(), // This will animate the size change of the card
+            .animateContentSize(),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column {
             Image(
-                painter = painterResource(id = R.drawable.movie_image),
-                contentDescription = "Movie Image",
-                modifier = Modifier.fillMaxWidth() // Change to fillMaxWidth to maintain aspect ratio
+                painter = rememberImagePainter(
+                    data = movie.imageUrl,
+                    builder = {
+                        crossfade(true)
+                    }
+                ),
+                contentDescription = "${movie.title} Image",
+                modifier = Modifier.fillMaxWidth().height(200.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "300",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.weight(1f) // This will make the text take up max horizontal space
-                )
+                Text(text = movie.title)
                 IconButton(onClick = { expanded = !expanded }) {
                     Icon(
                         imageVector = if (expanded) Icons.Filled.ArrowDropDown else Icons.Filled.ArrowDropDown,
                         contentDescription = "Toggle Details",
                         modifier = Modifier
                             .graphicsLayer {
-                                // This rotation will handle the arrow turning
                                 rotationZ = if (expanded) 180f else 0f
                 }
                     )
             }}
             AnimatedVisibility(visible = expanded) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Director: Zack Snyder",
-                        style = MaterialTheme.typography.bodyMedium
+                    Text("Director: ${movie.director}", style = MaterialTheme.typography.bodyMedium)
+                    Text("Released: ${movie.year}", style = MaterialTheme.typography.bodyMedium)
+
+                    Divider(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                    modifier = Modifier.padding(vertical = 4.dp)
                     )
-                    Text(
-                        text = "Released: 2006",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "Plot: King Leonidas of Sparta and a force of 300 men fight the Persians at Thermopylae in 480 B.C.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Text("Plot: ${movie.plot}", style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
